@@ -59,12 +59,12 @@
     pugzoContainer.style.position = 'fixed';
     pugzoContainer.style.bottom = '20px';
     pugzoContainer.style.right = '80px';
-    pugzoContainer.style.width = '50px';
-    pugzoContainer.style.height = '50px';
+    pugzoContainer.style.width = '70px';
+    pugzoContainer.style.height = '70px';
     pugzoContainer.style.zIndex = '10000';
 
     const pugzoImage = document.createElement('img');
-    pugzoImage.src = 'https://chatterboxvr.com/wordpress/pugzou.png'; // Replace with your Pugzo image URL
+    pugzoImage.src = 'https://chatterboxvr.com/wordpress/wp-content/uploads/2024/11/unnamed.png'; // Replace with your Pugzo image URL
     pugzoImage.alt = 'Pugzo';
     pugzoImage.style.width = '100%';
     pugzoImage.style.borderRadius = '50%';
@@ -88,13 +88,25 @@
     toggleButton.textContent = '-'; // Initially open
     document.body.appendChild(toggleButton);
 
+    // ページ読み込み時に状態を復元
+    const chatState = localStorage.getItem('chatWindowState');
+    if (chatState === 'open') {
+        chatWindow.style.display = 'block';
+        toggleButton.textContent = '-';
+    }else if(chatState === 'closed'){
+        chatWindow.style.display = 'none';
+        toggleButton.textContent = '+';
+    }
+    
     toggleButton.addEventListener('click', function() {
         if (chatWindow.style.display === 'none') {
             chatWindow.style.display = 'block';
             toggleButton.textContent = '-';
+            localStorage.setItem('chatWindowState', 'open'); // 状態を保存
         } else {
             chatWindow.style.display = 'none';
             toggleButton.textContent = '+';
+            localStorage.setItem('chatWindowState', 'closed'); // 状態を保存
         }
     });
 
