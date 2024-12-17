@@ -64,12 +64,61 @@
     pugzoContainer.style.zIndex = '10000';
 
     const pugzoImage = document.createElement('img');
-    pugzoImage.src = 'https://chatterboxvr.com/wordpress/wp-content/uploads/2024/11/unnamed.png'; // Replace with your Pugzo image URL
-    pugzoImage.alt = 'Pugzo';
+    pugzoImage.src = 'https://chatterboxvr.com/wordpress/wp-content/uploads/2024/11/unnamed.png';
+    pugzoImage.alt = 'パグ蔵';
     pugzoImage.style.width = '100%';
     pugzoImage.style.borderRadius = '50%';
+    pugzoImage.style.cursor = 'pointer';
+
+    const tooltipText = document.createElement('div');
+    tooltipText.textContent = '🐾 パグ蔵だよ！';
+    tooltipText.style.visibility = 'hidden';
+    tooltipText.style.width = '150px';
+    tooltipText.style.backgroundColor = '#ffde59'; // 明るい黄色
+    tooltipText.style.color = '#333';
+    tooltipText.style.textAlign = 'center';
+    tooltipText.style.padding = '10px';
+    tooltipText.style.borderRadius = '10px';
+    tooltipText.style.fontSize = '14px';
+    tooltipText.style.fontFamily = "'Comic Sans MS', cursive"; 
+    tooltipText.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.2)';
+    tooltipText.style.position = 'absolute';
+    tooltipText.style.bottom = '110%'; // 画像の上に表示
+    tooltipText.style.left = '50%';
+    tooltipText.style.transform = 'translateX(-50%)';
+    tooltipText.style.zIndex = '1';
+    tooltipText.style.opacity = '0';
+    tooltipText.style.transition = 'opacity 0.5s ease, transform 0.3s ease';
+
+    // 吹き出しの三角形
+    tooltipText.style.content = '';
+    tooltipText.style.display = 'inline-block';
+    tooltipText.setAttribute('data-tooltip', 'パグ蔵は考え中…');
+
     pugzoContainer.appendChild(pugzoImage);
+    pugzoContainer.appendChild(tooltipText);
     document.body.appendChild(pugzoContainer);
+
+    pugzoContainer.addEventListener('mouseover', () => {
+        tooltipText.style.visibility = 'visible';
+        tooltipText.style.opacity = '1';
+        tooltipText.textContent = getRandomPugzoMessage();
+    });
+    pugzoContainer.addEventListener('mouseout', () => {
+        tooltipText.style.visibility = 'hidden';
+        tooltipText.style.opacity = '0';
+    });
+
+    function getRandomPugzoMessage() {
+        const messages = [
+            '🐾 今日はいい天気だね！',
+            '🐾 おっと、何か質問かな？',
+            '🐾 ご主人様、どうしましたか？',
+            '🐾 モフモフしていきます？'
+        ];
+        return messages[Math.floor(Math.random() * messages.length)];
+    }
+
     
     const toggleButton = document.createElement('div');
     toggleButton.id = 'chat-toggle';
