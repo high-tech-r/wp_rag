@@ -64,7 +64,7 @@
     pugzoContainer.style.zIndex = '10000';
 
     const pugzoImage = document.createElement('img');
-    pugzoImage.src = 'https://chatterboxvr.com/wordpress/wp-content/uploads/2024/11/unnamed.png';
+    pugzoImage.src = '/unnamed.png'; // 任意の画像を指定してください。
     pugzoImage.alt = 'パグ蔵';
     pugzoImage.style.width = '100%';
     pugzoImage.style.borderRadius = '50%';
@@ -181,7 +181,7 @@
     loadingIndicator.style.width = '100%';
 
     const loadingGif = document.createElement('img');
-    loadingGif.src = 'https://chatterboxvr.com/wordpress/pug.gif';
+    loadingGif.src = '/pug.gif';　// Loadingに表示させるGif等を指定してください。
     loadingGif.alt = 'Loading...';
     loadingGif.style.width = '100px';
     loadingIndicator.appendChild(loadingGif);
@@ -215,7 +215,7 @@ chatInput.addEventListener('keypress', function(event) {
 
             // Show loading indicator
             loadingIndicator.style.display = 'block';
-            fetch('https://chatterboxvr.com/wp_rag/rag_endpoint.php', {
+            fetch('/rag_endpoint.php', { //endpointのプログラムへアクセスするURLを指定してください。 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: userMessage, post_id: postId })
@@ -243,38 +243,14 @@ chatInput.addEventListener('keypress', function(event) {
                     botMessageDiv.style.margin = '10px 0';
                     botMessageDiv.style.textAlign = 'left';
                     botMessageDiv.style.color = '#333';
-                    
-                    
-                    
-                    
-                    
-                    // pubzo start
+
                     botMessageDiv.style.padding = '10px';
                     botMessageDiv.style.border = '1px solid #ccc';
                     botMessageDiv.style.borderRadius = '10px';
                     botMessageDiv.style.backgroundColor = '#f9f9f9';
-                    // pugzo end
-                    
-                    
                     
                     chatBody.appendChild(botMessageDiv);
-/*
-                    // 関連投稿があればリンクを表示
-                    if (data.response.related_post) {
-                        const relatedPostDiv = document.createElement('div');
-                        relatedPostDiv.style.margin = '10px 0';
 
-                        const postLink = document.createElement('a');
-                        postLink.href = data.response.related_post.url; // サーバーから返ってくる関連投稿のURL
-                        postLink.textContent = `Related Post: ${data.response.related_post.title}`;
-                        postLink.style.color = '#0073aa';
-                        postLink.style.display = 'block';
-                        postLink.target = '_blank'; // Open link in new tab
-                        relatedPostDiv.appendChild(postLink);
-
-                        chatBody.appendChild(relatedPostDiv);
-                    }
-*/
                     if (url) {
                         const urlDiv = document.createElement('div');
                         const urlLink = document.createElement('a');
