@@ -24,7 +24,33 @@
     chatHeader.style.fontSize = '16px';
     chatHeader.style.textAlign = 'center';
     chatHeader.style.cursor = 'pointer';
-    chatHeader.textContent = window.location.href.includes('?p=') ? 'ブログの記事について質問してね' : 'なんでも聞いてね！';
+    chatHeader.textContent = window.location.href.includes('?p=') ? '記事の質問をしてね' : 'なんでも聞いてね！';
+    
+    
+    
+    const clearButton = document.createElement('button');
+    clearButton.textContent = 'クリア';
+    clearButton.style.backgroundColor = '#ff5555';
+    clearButton.style.color = '#fff';
+    clearButton.style.border = 'none';
+    clearButton.style.borderRadius = '5px';
+    clearButton.style.padding = '5px 5px';
+    clearButton.style.marginLeft = '10px';
+    clearButton.style.cursor = 'pointer';
+    clearButton.style.fontSize = '10px';
+    clearButton.style.float = 'right'; // 右側に配置
+    clearButton.style.marginTop = '-4px'; // ヘッダーとボタンの高さを調整
+
+    // クリアボタンのクリックイベント
+    clearButton.addEventListener('click', () => {
+        conversationHistory = [];
+        localStorage.removeItem('conversationHistory');
+        displayConversationHistory();
+    });
+
+    // ボタンをヘッダーに追加
+    chatHeader.appendChild(clearButton);
+
     chatWindow.appendChild(chatHeader);
 
     const chatBody = document.createElement('div');
@@ -35,6 +61,7 @@
     chatBody.style.fontSize = '14px';
     chatBody.style.boxSizing = 'border-box';
     chatWindow.appendChild(chatBody);
+
 
     const chatInput = document.createElement('input');
     chatInput.type = 'text';
@@ -64,7 +91,7 @@
     pugzoContainer.style.zIndex = '10000';
 
     const pugzoImage = document.createElement('img');
-    pugzoImage.src = '/unnamed.png'; // 任意の画像を指定してください。
+    pugzoImage.src = 'https://chatterboxvr.com/wordpress/wp-content/uploads/2024/11/unnamed.png';
     pugzoImage.alt = 'パグ蔵';
     pugzoImage.style.width = '100%';
     pugzoImage.style.borderRadius = '50%';
@@ -119,7 +146,193 @@
         return messages[Math.floor(Math.random() * messages.length)];
     }
 
-    
+
+
+    // Microphone button container
+    const micContainer = document.createElement('div');
+    micContainer.style.position = 'fixed';
+    micContainer.style.bottom = '60px';
+    micContainer.style.right = '0px';
+    micContainer.style.width = '70px';
+    micContainer.style.height = '70px';
+    micContainer.style.zIndex = '10000';
+
+    const micButton = document.createElement('button');
+    micButton.textContent = '🎤';
+    micButton.style.width = '70%';
+    micButton.style.height = '70%';
+    micButton.style.borderRadius = '50%';
+    micButton.style.border = 'none';
+    micButton.style.backgroundColor = '#0073aa';
+    micButton.style.color = '#fff';
+    micButton.style.fontSize = '24px';
+    micButton.style.display = 'flex';
+    micButton.style.padding = '10px 10px';
+    micButton.style.justifyContent = 'center';
+    micButton.style.alignItems = 'center'; // 縦方向の中央揃え
+
+    micButton.style.cursor = 'pointer';
+    micContainer.appendChild(micButton);
+
+    // Tooltip for microphone button
+    const micTooltip = document.createElement('div');
+    micTooltip.textContent = '🎙️ 音声で会話もできるよ！マイクボタンをクリックして話しかけてみてね。話し終わったらもう一度クリックして録音を終了してね。';
+    micTooltip.style.visibility = 'hidden';
+    micTooltip.style.width = '200px';
+    micTooltip.style.backgroundColor = '#ffde59'; // 明るい黄色
+    micTooltip.style.color = '#333';
+    micTooltip.style.textAlign = 'center';
+    micTooltip.style.padding = '10px';
+    micTooltip.style.borderRadius = '10px';
+    micTooltip.style.fontSize = '12px';
+    micTooltip.style.fontFamily = "'Comic Sans MS', cursive"; 
+    micTooltip.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.2)';
+    micTooltip.style.position = 'absolute';
+    micTooltip.style.bottom = '110%'; // マイクボタンの上に表示
+    micTooltip.style.left = '-30%';
+    micTooltip.style.transform = 'translateX(-50%)';
+    micTooltip.style.zIndex = '1';
+    micTooltip.style.opacity = '0';
+    micTooltip.style.transition = 'opacity 0.5s ease, transform 0.3s ease';
+
+    micContainer.appendChild(micTooltip);
+    document.body.appendChild(micContainer);
+
+    // Tooltip hover events
+    micButton.addEventListener('mouseover', () => {
+        micTooltip.style.visibility = 'visible';
+        micTooltip.style.opacity = '1';
+    });
+
+    micButton.addEventListener('mouseout', () => {
+        micTooltip.style.visibility = 'hidden';
+        micTooltip.style.opacity = '0';
+    });
+
+    // Microphone interaction logic
+    let isRecording = false;
+    micButton.addEventListener('click', () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    async function startRecording() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+        isRecording = true;
+        micButton.textContent = '⏹️';
+
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'audio.webm');
+            
+            
+            let currentPostId = getPostIdFromUrl();
+            const postId = currentPostId || null; // 現在の投稿IDを保持している変数
+            if (postId) {
+                formData.append('post_id', postId);
+            }
+            
+            fetch('https://chatterboxvr.com/wp_rag/voice_endpoint.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.audio_url) {
+                        // オーディオ要素の作成
+                        const audio = new Audio(data.audio_url);
+                        audio.controls = true; // 再生コントロールを追加
+                        audio.style.display = 'block';
+                        audio.style.margin = '10px auto';
+
+                        // チャットウィンドウに音声プレイヤーを追加
+                        chatBody.appendChild(audio);
+
+                        // 自動再生を試みる
+                        audio.play().catch((error) => {
+                            console.warn('自動再生に失敗しました。手動再生を試してください。', error);
+
+                            // 再生ボタンを表示
+                            const playButton = document.createElement('button');
+                            playButton.textContent = '再生する';
+                            playButton.style.marginTop = '10px';
+                            playButton.style.display = 'block';
+                            playButton.addEventListener('click', () => {
+                                audio.play().catch((err) => {
+                                    console.error('再生に失敗しました:', err);
+                                });
+                            });
+                            chatBody.appendChild(playButton);
+                        });
+                    } else {
+                        console.error('音声URLが返却されませんでした:', data);
+                    }
+                })
+                .catch((error) => {
+                    console.error('サーバー通信中にエラーが発生しました:', error);
+                });
+
+            audioChunks = [];
+        };
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        isRecording = false;
+        micButton.textContent = '🎤';
+    }
+
+    // 会話履歴を保存する配列（最大3つ）
+    let conversationHistory = JSON.parse(localStorage.getItem('conversationHistory')) || [];
+
+    // 履歴を表示する関数
+    function displayConversationHistory() {
+        chatBody.innerHTML = ''; // 現在のチャットをクリア
+        // 履歴を1件ずつ表示
+        conversationHistory.forEach((item) => {
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.style.margin = '10px 0';
+
+            // ユーザーのメッセージかAIのメッセージかを判定
+            userMessageDiv.style.textAlign = 'right';
+            userMessageDiv.innerHTML = `
+                <div style="margin: 10px 0px; text-align: right; color: rgb(0, 115, 170);">
+                    ${item.user}
+                </div>
+            `;
+            chatBody.appendChild(userMessageDiv);
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.style.textAlign = 'left';
+            botMessageDiv.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <span style="background-color: #f5f5f5; color: #333; padding: 8px; border-radius: 10px; max-width: 70%; word-break: break-word;">
+                         ${item.bot}
+                    </span>
+                </div>
+            `;
+
+            chatBody.appendChild(botMessageDiv);
+        });
+        
+    }
+
+    // 初回ロード時に履歴を表示
+    displayConversationHistory();
+
+    // Toggle button for Chat Window
     const toggleButton = document.createElement('div');
     toggleButton.id = 'chat-toggle';
     toggleButton.style.position = 'fixed';
@@ -181,7 +394,7 @@
     loadingIndicator.style.width = '100%';
 
     const loadingGif = document.createElement('img');
-    loadingGif.src = '/pug.gif';　// Loadingに表示させるGif等を指定してください。
+    loadingGif.src = 'https://chatterboxvr.com/wordpress/pug.gif';
     loadingGif.alt = 'Loading...';
     loadingGif.style.width = '100px';
     loadingIndicator.appendChild(loadingGif);
@@ -196,6 +409,8 @@
     loadingIndicator.appendChild(loadingText);
 
     chatWindow.appendChild(loadingIndicator);
+    
+    
     
 chatInput.addEventListener('keypress', function(event) {
     if (event.key === 'Enter') {
@@ -215,7 +430,7 @@ chatInput.addEventListener('keypress', function(event) {
 
             // Show loading indicator
             loadingIndicator.style.display = 'block';
-            fetch('/rag_endpoint.php', { //endpointのプログラムへアクセスするURLを指定してください。 
+            fetch('https://chatterboxvr.com/wp_rag/rag_endpoint.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: userMessage, post_id: postId })
@@ -243,14 +458,42 @@ chatInput.addEventListener('keypress', function(event) {
                     botMessageDiv.style.margin = '10px 0';
                     botMessageDiv.style.textAlign = 'left';
                     botMessageDiv.style.color = '#333';
-
+                    
+                    // pubzo start
                     botMessageDiv.style.padding = '10px';
                     botMessageDiv.style.border = '1px solid #ccc';
                     botMessageDiv.style.borderRadius = '10px';
                     botMessageDiv.style.backgroundColor = '#f9f9f9';
+                    // pugzo end
+                    
+                    // 履歴に追加
+                    conversationHistory.push({ user: userMessage, bot: botMessage });
+                    if (conversationHistory.length > 3) {
+                        conversationHistory.shift(); // 古い履歴を削除
+                    }
+
+                    // 履歴を保存
+                    localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+                    chatInput.value = '';
                     
                     chatBody.appendChild(botMessageDiv);
+/*
+                    // 関連投稿があればリンクを表示
+                    if (data.response.related_post) {
+                        const relatedPostDiv = document.createElement('div');
+                        relatedPostDiv.style.margin = '10px 0';
 
+                        const postLink = document.createElement('a');
+                        postLink.href = data.response.related_post.url; // サーバーから返ってくる関連投稿のURL
+                        postLink.textContent = `Related Post: ${data.response.related_post.title}`;
+                        postLink.style.color = '#0073aa';
+                        postLink.style.display = 'block';
+                        postLink.target = '_blank'; // Open link in new tab
+                        relatedPostDiv.appendChild(postLink);
+
+                        chatBody.appendChild(relatedPostDiv);
+                    }
+*/
                     if (url) {
                         const urlDiv = document.createElement('div');
                         const urlLink = document.createElement('a');
