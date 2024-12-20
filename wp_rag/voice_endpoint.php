@@ -32,7 +32,7 @@ if (!isset($_FILES['audio']) || $_FILES['audio']['error'] !== UPLOAD_ERR_OK) {
 
 // 環境変数からAPIキーを取得
 $openaiApiKey = $_ENV['OPENAI_API_KEY'];
-$googleCredentialsPath = '/var/www/html/wp_rag/dotted-nature-307614-00bbfa1d804c.json';
+$googleCredentialsPath = '/var/www/html/wp_rag/dotted-nature-00000.json'; // GCPで作成した設定ファイルのパス
 
 
     
