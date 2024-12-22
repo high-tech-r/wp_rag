@@ -91,7 +91,7 @@
     pugzoContainer.style.zIndex = '10000';
 
     const pugzoImage = document.createElement('img');
-    pugzoImage.src = '/unnamed.png'; // 画像のURLを指定してください。
+    pugzoImage.src = 'https://chatterboxvr.com/wordpress/wp-content/uploads/2024/11/unnamed.png';
     pugzoImage.alt = 'パグ蔵';
     pugzoImage.style.width = '100%';
     pugzoImage.style.borderRadius = '50%';
@@ -223,6 +223,7 @@
     let audioChunks = [];
 
     async function startRecording() {
+    try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.start();
@@ -245,7 +246,7 @@
                 formData.append('post_id', postId);
             }
             
-            fetch('/wp_rag/voice_endpoint.php', { // エンドポイントプログラムの宛先に修正してください。
+            fetch('https://chatterboxvr.com/wp_rag/voice_endpoint.php', {
                 method: 'POST',
                 body: formData
             })
@@ -287,7 +288,11 @@
 
             audioChunks = [];
         };
+     }catch (error) {
+        console.error('マイクへのアクセスが拒否されました:', error);
+        alert('マイクへのアクセスが許可されていません。ブラウザの設定を確認してください。');
     }
+}
 
     function stopRecording() {
         mediaRecorder.stop();
@@ -394,7 +399,7 @@
     loadingIndicator.style.width = '100%';
 
     const loadingGif = document.createElement('img');
-    loadingGif.src = '/pug.gif'; // Loding中に表示させたいGifを設定してください。
+    loadingGif.src = 'https://chatterboxvr.com/wordpress/pug.gif';
     loadingGif.alt = 'Loading...';
     loadingGif.style.width = '100px';
     loadingIndicator.appendChild(loadingGif);
