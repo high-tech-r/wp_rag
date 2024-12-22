@@ -32,17 +32,30 @@ if (!isset($_FILES['audio']) || $_FILES['audio']['error'] !== UPLOAD_ERR_OK) {
 
 // 環境変数からAPIキーを取得
 $openaiApiKey = $_ENV['OPENAI_API_KEY'];
-$googleCredentialsPath = '/var/www/html/wp_rag/dotted-nature-00000.json'; // GCPで作成した設定ファイルのパス
+$googleCredentialsPath = '/var/www/html/wp_rag/dotted-nature-xxxxxc.json';
 
+    // 音声ファイル保存ディレクトリを設定
+    $audioFilePath = $_FILES['audio']['tmp_name'];
+    $mimeType = mime_content_type($audioFilePath);
+    $saveDir = __DIR__ . '/generated_audio/';
+    if (!file_exists($saveDir)) {
+        mkdir($saveDir, 0777, true);
+    }
 
-    
-// 音声ファイル保存ディレクトリを設定
-$audioFilePath = $_FILES['audio']['tmp_name'];
-$saveDir = __DIR__ . '/generated_audio/';
-if (!file_exists($saveDir)) {
-    mkdir($saveDir, 0777, true);
-}
-$savePath = $saveDir . uniqid('audio_', true) . '.mp3';
+    // ファイルを適切な拡張子で保存
+    $originalPath = $saveDir . uniqid('audio_', true) . '.' . pathinfo($_FILES['audio']['name'], PATHINFO_EXTENSION);
+    move_uploaded_file($audioFilePath, $originalPath);
+
+    // MP3形式に変換
+    $convertedPath = $saveDir . uniqid('audio_', true) . '.mp3';
+    $ffmpegCommand = "ffmpeg -i $originalPath -vn -ar 44100 -ac 2 -b:a 192k $convertedPath";
+    exec($ffmpegCommand, $output, $returnCode);
+
+    if ($returnCode !== 0) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to convert audio to MP3 format.']);
+        exit;
+    }
 
 
 try {
@@ -55,7 +68,7 @@ try {
         'multipart' => [
             [
                 'name' => 'file',
-                'contents' => fopen($audioFilePath, 'r'),
+                'contents' => fopen($convertedPath, 'r'),
                 'filename' => 'audio.webm'
             ],
             [
@@ -65,9 +78,7 @@ try {
         ]
     ]);
 
-
     $transcription = json_decode($response->getBody(), true)['text'];
-
 
     // POSTの内容取得
     $postId = isset($_POST['post_id']) ? (int) $_POST['post_id'] : null;
@@ -118,7 +129,6 @@ try {
         throw new Exception("Google Cloud credentials file not found at $googleCredentialsPath");
     }
     putenv("GOOGLE_APPLICATION_CREDENTIALS=$googleCredentialsPath");
-
     $ttsClient = new TextToSpeechClient();
     
     $inputText = (new SynthesisInput())
@@ -127,16 +137,13 @@ try {
     $voice = (new VoiceSelectionParams())
         ->setLanguageCode('ja-JP')
         ->setSsmlGender(SsmlVoiceGender::NEUTRAL);
-
     $audioConfig = (new AudioConfig())
         ->setAudioEncoding(AudioEncoding::MP3);
-
     $ttsResponse = $ttsClient->synthesizeSpeech($inputText, $voice, $audioConfig);
-    file_put_contents($savePath, $ttsResponse->getAudioContent());
-
+    file_put_contents($convertedPath, $ttsResponse->getAudioContent());
     $ttsClient->close();
 
-    echo json_encode(['audio_url' => '/wp_rag/generated_audio/' . basename($savePath)]);
+    echo json_encode(['audio_url' => '/wp_rag/generated_audio/' . basename($convertedPath)]);
 
 } catch (Exception $e) {
     http_response_code(500);
