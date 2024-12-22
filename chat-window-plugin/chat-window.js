@@ -91,7 +91,7 @@
     pugzoContainer.style.zIndex = '10000';
 
     const pugzoImage = document.createElement('img');
-    pugzoImage.src = 'https://chatterboxvr.com/wordpress/wp-content/uploads/2024/11/unnamed.png';
+    pugzoImage.src = 'unnamed.png';
     pugzoImage.alt = 'パグ蔵';
     pugzoImage.style.width = '100%';
     pugzoImage.style.borderRadius = '50%';
@@ -246,7 +246,7 @@
                 formData.append('post_id', postId);
             }
             
-            fetch('https://chatterboxvr.com/wp_rag/voice_endpoint.php', {
+            fetch('/wp_rag/voice_endpoint.php', {
                 method: 'POST',
                 body: formData
             })
@@ -399,7 +399,7 @@
     loadingIndicator.style.width = '100%';
 
     const loadingGif = document.createElement('img');
-    loadingGif.src = 'https://chatterboxvr.com/wordpress/pug.gif';
+    loadingGif.src = '/pug.gif';
     loadingGif.alt = 'Loading...';
     loadingGif.style.width = '100px';
     loadingIndicator.appendChild(loadingGif);
@@ -435,7 +435,7 @@ chatInput.addEventListener('keypress', function(event) {
 
             // Show loading indicator
             loadingIndicator.style.display = 'block';
-            fetch('https://chatterboxvr.com/wp_rag/rag_endpoint.php', {
+            fetch('/wp_rag/rag_endpoint.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query: userMessage, post_id: postId })
